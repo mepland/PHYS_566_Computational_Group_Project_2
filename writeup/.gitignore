@@ -1,0 +1,11 @@
+*.nav
+*.out
+*.snm
+*.toc
+*.aux
+*.log
+*.bbl
+*.blg
+*.swp
+*Notes.bib
+writeup.pdf
