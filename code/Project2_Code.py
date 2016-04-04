@@ -45,7 +45,6 @@ def inBounds(x,y,N):
         inCheck=True
     return inCheck
    
-   
 #Create a function to check if an individual lattice point is a neighbor to the point of interests.
 #Returns true if the point is a neighbor and false if the point is not a neighbor.
 def checkNeighbor(x,y,N):
@@ -55,9 +54,16 @@ def checkNeighbor(x,y,N):
     else:
         neighbor=False
     return neighbor
+ 
+#Create a function to see if all occupied neighbors are the same.
+#Returns true if all the occupied neighbors are the same and false if they are not.
+def isIdentical(testList):
+    for i in range(len(testList)):
+        first=testList[0]
+        if first!=testList[i]:
+            return False
+    return True   
     
-    
-
 #Set the Lattice Size
 N_5=5
 
@@ -90,14 +96,13 @@ right=inBounds(newx+1,newy,N_5)
 top=inBounds(newx,newy-1,N_5)
 bottom=inBounds(newx,newy+1,N_5)
 
-
 #Initialize these variables which determine whether the neighbors are occupied
 leftNeigh=False
 rightNeigh=False
 topNeigh=False
 bottomNeigh=False
 
-
+#Check if the neighbors are occupied
 if left==True:
     leftNeigh=checkNeighbor(newx-1,newy,L_5)
 if right==True:
@@ -109,10 +114,33 @@ if bottom==True:
 
 #Case 1, No Neighbors are Occupied, Make a New Cluster
 if leftNeigh==False and rightNeigh==False and topNeigh==False and bottomNeigh==False:
-    L_5[xnew,ynew]=clusterCount+1   #Make a new cluster
+    L_5[newx,newy]=clusterCount+1   #Make a new cluster
     clusterCount=clusterCount+1     #Increase the total number of clusters by 1
     
 #Case 2, One Common Neighbor, Add to an Existing Cluster
+#Check if each neighbor is occupied using if statements
+elif leftNeigh==True or rightNeigh==True or topNeigh==True or bottomNeigh==True:
+    neighCount=0                 #The number of total occupied neighbors
+    occupyNeigh=[0.0]*4           #An array with all the occupied neighbors
+    if leftNeigh==True:
+        occupyNeigh[neighCount]=L_5[newx-1,newy]
+        neighCount=neighCount+1
+    if rightNeigh==True:
+        occupyNeigh[neighCount]=L_5[newx+1,newy]
+        neighCount=neighCount+1
+    if topNeigh==True:
+        occupyNeigh[neighCount]=L_5[newx,newy-1]
+        neighCount=neighCount+1
+    if bottomNeigh==True:
+        occupyNeigh[neighCount]=L_5[newx,newy-1]
+        neighCount=neighCount+1
+            
+    occupyNeigh=occupyNeigh[0:neighCount]      #Resize the array to the number of occpuied neighbors
+    sameNeigh=isIdentical(occupyNeigh)         #Use isIdentical to determine if all occupied neighbors are occupied by the same number
+     
+    #If the occupied neighbors are all the same, assign the current point the same value
+    if sameNeigh==True:
+        L_5[newx-1,newy]=occupyNeigh[0]
     
 #Case 3, Multiple Common Neighbors, Merge Clusters
 
