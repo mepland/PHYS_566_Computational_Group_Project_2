@@ -7,6 +7,8 @@ from scipy.optimize import curve_fit
 import math
 import random
 
+import matplotlib.animation as animation
+
 ########################################################
 # Define a function to create the output dir
 # If it already exists don't crash, otherwise raise an exception
@@ -76,7 +78,8 @@ class cluster:
     # See if self and cluster2 touch/overlap
     def touching(self, cluster2):
 
-	pos_to_check = [[-1,1], [0,1], [1,1], [-1,0], [0,0], [1,0], [-1,-1], [0,-1], [1,-1]]
+	# pos_to_check = [[-1,1], [0,1], [1,1], [-1,0], [0,0], [1,0], [-1,-1], [0,-1], [1,-1]] # Moore neighborhood
+	pos_to_check = [[0,1], [-1,0], [0,0], [1,0], [0,-1]] # Von Neumann neighborhood
 
 	touching = False
 	i = 0
@@ -179,9 +182,9 @@ def create_spanning_cluster(N, m_seed):
 # end def for create_spanning_cluster()
 
 
-# Define a function to plot the grid
-def plot_grid(optional_title, m_path, fname, run = []):
-	if(debugging): print 'Beginning plot_grid()'
+# Define a function to draw the grid
+def draw_grid_figure(optional_title, run = []):
+	if(debugging): print 'Beginning draw_grid_figure()'
 
 	N = run[0]
 	seed = run[1]
@@ -236,6 +239,17 @@ def plot_grid(optional_title, m_path, fname, run = []):
 
 	ax.text(1.0415, 0.65, ann_text, bbox=dict(edgecolor='black', facecolor='white', fill=False), size='x-small', transform=ax.transAxes)
 
+	return fig
+
+	if(debugging): print 'draw_grid_figure() completed!!!'
+# end def for draw_grid_figure()
+
+
+
+# Define a function to plot the grid
+def plot_grid(optional_title, m_path, fname, run = []):
+	fig = draw_grid_figure(optional_title, run)
+
 	# Print it out
 	make_path(m_path)
 	# fig.savefig(m_path+'/'+fname+'.png', dpi=900)
@@ -246,6 +260,24 @@ def plot_grid(optional_title, m_path, fname, run = []):
 	if(debugging): print 'plot_grid() completed!!!'
 # end def for plot_grid()
 
+# TODO finish writting ani and it's hooks in the program later tonight
+'''
+# Define a function to save an animation of a list of clusters lists
+def ani(optional_title, m_path, fname, runs = []):
+
+	for i in range(len(runs)):
+		fig = draw_grid_figure(optional_title, run)
+
+	# Print it out
+	make_path(m_path)
+	# fig.savefig(m_path+'/'+fname+'.png', dpi=900)
+	# if len(cluster) < 10**3: fig.savefig(m_path+'/'+fname+'.pdf')
+	fig.savefig(m_path+'/'+fname+'.pdf')
+	fig.clf() # Clear fig for reuse
+
+	if(debugging): print 'plot_grid() completed!!!'
+# end def for plot_grid()
+'''
 
 ########################################################
 ########################################################
