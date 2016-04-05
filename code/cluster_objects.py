@@ -45,18 +45,13 @@ print '\nBeginning cluster_objects.py'
 class cluster:
 
     # constructor
-    def __init__(self, N):
+    def __init__(self, cluster_index, N):
 
+	self.index = cluster_index
 	self.member_points = []
 
 	# generate random starting position on (0 to N) x (0 to N) grid
 	self.member_points.append([random.randrange(0, N+1, 1), random.randrange(0, N+1, 1)])
-
-	'''
-	print self.member_points[0]
-	print 'x = %d' % self.member_points[0][0]
-	print 'y = %d' % self.member_points[0][1]
-	'''
 
     # end def for constructor
 
@@ -90,7 +85,6 @@ class cluster:
 		while j < len(self.member_points) and not touching:
 			k = 0
 			while k < len(pos_to_check) and not touching:
-				# print 'touch i = %d, j = %d, k = %d' % (i, j, k)
 				if self.member_points[j][0] == cluster2.member_points[i][0] + pos_to_check[k][0] and self.member_points[j][1] == cluster2.member_points[i][1] + pos_to_check[k][1]:
 					touching = True
 				k += 1
@@ -107,39 +101,46 @@ class cluster:
 
 	touch_floor = False
 	touch_ceiling = False
+	span = False
 
 	i = 0
 
-	while i < len(self.member_points) and not (touch_floor and touch_ceiling):
+	while i < len(self.member_points) and not span:
 		if self.member_points[i][1] == 0: touch_floor = True
 		if self.member_points[i][1] == N: touch_ceiling = True
+		if touch_floor and touch_ceiling:
+			if debugging2: print 'SPANS!!!!'
+			span = True
 		i += 1
 
-	return (touch_floor and touch_ceiling)
+	return span
     # end def for spanning()
 
 
 # end class for cluster_point
 
 # Define a function to generate a new cluster, merge when necessary
-def create_next_cluster(N, clusters = []):
+def create_next_cluster(index, N, clusters = []):
 	
-	clusters.append(cluster(N))
+	clusters.append(cluster(index, N))
 
-	current_len_clusters = len(clusters)
-	i = 0
+	fully_merged = False 
 
-	while i < current_len_clusters: 
-		j = i+1
-		while j < current_len_clusters:
-			# print 'i = %d, j = %d' % (i, j)
-
-			if clusters[i].touching(clusters[j]):
-				clusters[i].merge(clusters[j])
-				del clusters[j]
-				current_len_clusters += -1
-			j += 1
-		i += 1
+	while not fully_merged:
+		fully_merged = True
+		current_len_clusters = len(clusters)
+		i = 0
+		while i < current_len_clusters: 
+			j = i + 1
+			while j < current_len_clusters:
+				if debugging2: print 'create_next_cluster(): i = %d, j = %d, len(clusters) = %d' % (i, j, current_len_clusters)
+				if clusters[i].touching(clusters[j]):
+					clusters[i].merge(clusters[j])
+					del clusters[j]
+					fully_merged = False
+					current_len_clusters += -1
+				j += 1
+			i += 1
 
 	return clusters
 # end def for create_next_cluster()
@@ -150,24 +151,32 @@ def create_spanning_cluster(N, m_seed):
 	random.seed(m_seed)
 
 	clusters = []
-	clusters.append(cluster(N))
+	clusters.append(cluster(0, N))
 
 	span = False
 
-	while not span:
-		clusters = create_next_cluster(N, clusters)
+	n_try = 0
+	max_try = 12*N
+	# max_try = 70 # set artificially low for debugging purposes...
 
+	while not span and n_try < max_try:
+		n_try += 1
+		clusters = create_next_cluster(n_try, N, clusters)
 
-		print 'checking span for %d clusters' % len(clusters)
+		if debugging: print 'checking span for %d clusters' % len(clusters)
 
-		for i in range(len(clusters)):
+		i = 0
+		while i < len(clusters) and not span:
 			span = clusters[i].spanning(N)
+			i += 1
+
+	if n_try >= max_try:
+		print 'create_spanning_cluster timed out!'
+
 
 	return [N, m_seed, clusters]
 
 # end def for create_spanning_cluster()
-
-
 
 
 # Define a function to plot the grid
@@ -187,7 +196,7 @@ def plot_grid(optional_title, m_path, fname, run = []):
 
 	# adjust axis range
 	ax.axis('scaled')
-	axis_offset = 0.1*N
+	axis_offset = 0.1*(N+1)
 	ax.set_xlim((-axis_offset, N+axis_offset))
 	ax.set_ylim((-axis_offset, N+axis_offset))
 
@@ -196,16 +205,26 @@ def plot_grid(optional_title, m_path, fname, run = []):
 
 	Dx = 1.0 # grid size of our world
 
+	colors = ['#332288', '#88CCEE', '#44AA99', '#117733', '#999933', '#DDCC77', '#CC6677', '#882255', '#AA4499']
+	spanned = False
+
 	# plot the clusters
 	for i in range(len(clusters)):
+		span = clusters[i].spanning(N)
 		for j in range(len(clusters[i].member_points)):
-			cp = plt.Rectangle((clusters[i].member_points[j][0]-Dx/2, clusters[i].member_points[j][1]-Dx/2), Dx, Dx, color='blue', alpha=1, fill=True, label='Non Spanning\nClusters')
-			ax.add_artist(cp)
+			if not span:
+				cp = plt.Rectangle((clusters[i].member_points[j][0]-Dx/2, clusters[i].member_points[j][1]-Dx/2), Dx, Dx, color=colors[i%len(colors)], alpha=0.4, fill=True, label='Non-Spanning\nClusters')
+				ax.add_artist(cp)
+			else:
+				spanned = True
+				span_cp = plt.Rectangle((clusters[i].member_points[j][0]-Dx/2, clusters[i].member_points[j][1]-Dx/2), Dx, Dx, color='blue', alpha=0.95, fill=True, label='Spanning\nCluster')
+				ax.add_artist(span_cp)
 
 	legend_handles.append(cp)
+	if spanned: legend_handles.append(span_cp)
 
 	# make a square on the world border
-	world_border = plt.Rectangle((0,0), N*Dx, N*Dx, color='black', alpha=1, fill=False, label='World Border')
+	world_border = plt.Rectangle((0-Dx/2,0-Dx/2), (N+1)*Dx, (N+1)*Dx, color='black', alpha=1, fill=False, label='World Border')
 	ax.add_artist(world_border)
 	legend_handles.append(world_border)
 
@@ -222,7 +241,6 @@ def plot_grid(optional_title, m_path, fname, run = []):
 	# fig.savefig(m_path+'/'+fname+'.png', dpi=900)
 	# if len(cluster) < 10**3: fig.savefig(m_path+'/'+fname+'.pdf')
 	fig.savefig(m_path+'/'+fname+'.pdf')
-
 	fig.clf() # Clear fig for reuse
 
 	if(debugging): print 'plot_grid() completed!!!'
@@ -240,28 +258,28 @@ def plot_grid(optional_title, m_path, fname, run = []):
 
 if(True):
 	output_path = '../output/dev'
-	debugging = True
-	debugging2 = True	
+	debugging = False
+	debugging2 = False
 
-# 	spanned_space = create_spanning_cluster(20, 7)
-
+	'''
 	m_seed = 7
 	N = 10
 
 	random.seed(m_seed)
 
 	clusters = []
-	clusters.append(cluster(N))
+	clusters.append(cluster(-9, N))
 
 	for i in range(10):
-		clusters = create_next_cluster(N, clusters)
+		clusters = create_next_cluster(-9, N, clusters)
 
 	# plot_grid(optional_title, m_path, fname, run = [])
-	# N = run[0]
-	# seed = run[1]
-	# clusters = run[2]
 
 	plot_grid('test', output_path, 'test', [N, m_seed, clusters])
+	'''
+
+ 	spanned_grid = create_spanning_cluster(10, 7)
+	plot_grid('Spanned', output_path, 'spanned', spanned_grid)
 
 
 ########################################################
