@@ -223,7 +223,7 @@ def create_spanning_cluster(N, m_seed, optional_title, m_path, fname, create_ani
 	span = False
 
 	n_try = 1
-	max_try = 20*N
+	max_try = 2.0*N*N
 	# max_try = 70 # set artificially low for debugging purposes...
 
 	with writer.saving(fig, gif_fname, 100):
@@ -342,7 +342,7 @@ def draw_grid_figure(optional_title, fig, run = []):
 	ann_text += '\nRNG Seed = %d' % (seed)
 	ann_text += '\n\nNeighborhood:\n'+neighborhood
 
-	ax.text(1.0415, 0.65, ann_text, bbox=dict(edgecolor='black', facecolor='white', fill=False), size='x-small', transform=ax.transAxes)
+	ax.text(1.0415, 0.018, ann_text, bbox=dict(edgecolor='black', facecolor='white', fill=False), size='x-small', transform=ax.transAxes)
 
 	return fig
 
@@ -406,7 +406,7 @@ if(True):
 	debugging = False
 	debugging2 = False
 	debugging3 = False
-	make_slides = False
+	make_slides = True
 
 	'''
  	run = create_spanning_cluster(10, 7, '', output_path, 'test_gif', True)
