@@ -29,17 +29,22 @@ def make_path(path):
 ########################################################
 # Set fixed/global parameters
 
-# N size of lattice, N x N
+neighborhood = 'Von Neumann'
+#neighborhood = 'Moore'
 
+n_sim = 50
 
 ########################################################
 # Print out fixed values
 print '\nBeginning cluster_objects.py'
-#print '\nFixed Parameters are:'
-#print '---------------------------------------------'
+print '\nFixed Parameters are:'
+print '---------------------------------------------'
 
-#print '\n---------------------------------------------'
-#print '---------------------------------------------\n'
+print '\nneighborhood type = '+neighborhood
+print '\nnumber of simulations to average = %d' % n_sim
+
+print '\n---------------------------------------------'
+print '---------------------------------------------\n'
 
 ########################################################
 ########################################################
@@ -81,9 +86,18 @@ class cluster:
     # See if self and cluster2 touch/overlap
     def touching(self, cluster2):
 
-	# pos_to_check = [[-1,1], [0,1], [1,1], [-1,0], [0,0], [1,0], [-1,-1], [0,-1], [1,-1]] # Moore neighborhood
-	pos_to_check = [[0,1], [-1,0], [0,0], [1,0], [0,-1]] # Von Neumann neighborhood
+	# Set up the neighborhood of points to check
+	pos_to_check = []
+	if neighborhood == 'Moore':
+		pos_to_check = [[-1,1], [0,1], [1,1], [-1,0], [0,0], [1,0], [-1,-1], [0,-1], [1,-1]] # Moore neighborhood
+	elif neighborhood == 'Von Neumann':
+		pos_to_check = [[0,1], [-1,0], [0,0], [1,0], [0,-1]] # Von Neumann neighborhood
+	else:
+                print 'ERROR!! Unknown neighborhood, exiting!!'
+                sys.exit()
 
+
+	# Check the points, halting as soon as one touches, otherwise go through them all and return False
 	touching = False
 	i = 0
 	while i < len(cluster2.member_points) and not touching:
@@ -105,18 +119,28 @@ class cluster:
     # ie one point has y index 0, and another N
     def spanning(self, N):
 
+	touch_left = False
+	touch_right = False
+
 	touch_floor = False
 	touch_ceiling = False
+
 	span = False
 
 	i = 0
 
 	while i < len(self.member_points) and not span:
+
+		if self.member_points[i][0] == 0: touch_left = True
+		if self.member_points[i][0] == N: touch_right = True
+
 		if self.member_points[i][1] == 0: touch_floor = True
 		if self.member_points[i][1] == N: touch_ceiling = True
-		if touch_floor and touch_ceiling:
-			if debugging2: print 'SPANS!!!!'
+
+
+		if touch_left and touch_right and touch_floor and touch_ceiling:
 			span = True
+			if debugging3: print 'SPANS!!!!'
 		i += 1
 
 	return span
@@ -125,7 +149,20 @@ class cluster:
 
 # end class for cluster_point
 
-# Define a function to generate a new cluster, merge when necessary
+# Define a function to compute p
+def find_p(N, clusters):
+
+	# Find number of occupied sites
+	occupied = 0.0
+
+	for i in range(len(clusters)):
+		occupied += len(clusters[i].member_points)
+	
+	return occupied/(N*N)
+# end def for find_p()
+
+# Define a function to generate a new cluster, merge clusters in when one touches, deleting the unnecessary one
+# keep looping until fully_merged comes back True as more than one cluster may merge per step/new point
 def create_next_cluster(index, N, clusters = []):
 	
 	clusters.append(cluster(index, N))
@@ -139,7 +176,7 @@ def create_next_cluster(index, N, clusters = []):
 		while i < current_len_clusters: 
 			j = i + 1
 			while j < current_len_clusters:
-				if debugging2: print 'create_next_cluster(): i = %d, j = %d, len(clusters) = %d' % (i, j, current_len_clusters)
+				if debugging3: print 'create_next_cluster(): i = %d, j = %d, len(clusters) = %d' % (i, j, current_len_clusters)
 				if clusters[i].touching(clusters[j]):
 					clusters[i].merge(clusters[j])
 					del clusters[j]
@@ -151,68 +188,84 @@ def create_next_cluster(index, N, clusters = []):
 	return clusters
 # end def for create_next_cluster()
 
-# Define a function to generate a clusters until one spans TODO 
+# Define a function to generate a clusters until one spans
 # also save an animation of a list of clusters lists
-def create_spanning_cluster(N, m_seed, optional_title, m_path, fname):
+def create_spanning_cluster(N, m_seed, optional_title, m_path, fname, create_ani):
 
-	create_ani = False
-	if m_path != '' and fname != '':
-		create_ani = True
+	# Setup animation, some objects will always be needed and are outside the if statement
+	gif_fname = ''
+	if create_ani:
 		make_path(m_path)
-		make_path(m_path+'/slides')
+		if make_slides: make_path(m_path+'/'+fname+'_slides')
+		gif_fname = m_path+'/'+fname+'.gif'
+	else:
+		gif_fname = m_path+'/.IGNORE.gif'
+		# There doesn't seem to be a way not to make this file
+		# Setup so it will be hidden on unix file systems
+		# and overwritten repeatedly 
 
-	# FFMpegWriter = animation.writers['ffmpeg']
-	gifWriter =  animation.writers['imagemagick']
-	
+	gifWriter = animation.writers['imagemagick']	
 	metadata = dict(title=optional_title, artist='Matplotlib', comment='')
-	# writer = FFMpegWriter(fps=10, metadata=metadata)
 	writer = gifWriter(metadata=metadata)
 	
 	fig = plt.figure()
 	
 
-	
+	# now generate the cluster
 
+	# set the random seed
 	random.seed(m_seed)
 
+	# start with one point
 	clusters = []
 	clusters.append(cluster(0, N))
 
 	span = False
 
-	n_try = 0
-	max_try = 12*N
+	n_try = 1
+	max_try = 20*N
 	# max_try = 70 # set artificially low for debugging purposes...
 
-	with writer.saving(fig, m_path+'/'+fname+'.gif', 100):
+	with writer.saving(fig, gif_fname, 100):
+
+		# keep adding clusters till we span or time out
 		while not span and n_try < max_try:
 			n_try += 1
 			clusters = create_next_cluster(n_try, N, clusters)
 
+			# grab an animation frame for each step
+			if create_ani:
+				fig = draw_grid_figure(optional_title, fig, [N, m_seed, clusters])
+				writer.grab_frame()
 
-			fig = draw_grid_figure(optional_title, fig, [N, m_seed, clusters])
-			writer.grab_frame()
-	
-			m_name = m_path+'/slides/'+fname+'_n_try_%d.pdf' % n_try
-			fig.savefig(m_name)
+				# Save out each frame of the animation for debugging/paper
+				if make_slides:
+					m_name = m_path+'/'+fname+'_slides/'+fname+'_n_try_%d.pdf' % n_try
+					fig.savefig(m_name)
 	
 			fig.clf() # Clear fig for reuse
 
 
+			if debugging3: print 'checking span for %d clusters' % len(clusters)
 
-			if debugging: print 'checking span for %d clusters' % len(clusters)
-
+			# See if a cluster spans the world
 			i = 0
 			while i < len(clusters) and not span:
 				span = clusters[i].spanning(N)
 				i += 1
-		
 
 
 
+		# grab the last frame a few times so it lingers in the gif
+		if create_ani:
+			fig = draw_grid_figure(optional_title, fig, [N, m_seed, clusters])
+			for i in range(4):
+				writer.grab_frame()
+			fig.clf() # Clear fig for reuse
 
-
-
+	# Now that all the plots are done, see if we timed out, warn if so
+	# and close the figure to save memory/prevent warnings
+	plt.close(fig)
 
 	if n_try >= max_try:
 		print 'create_spanning_cluster timed out!'
@@ -231,8 +284,6 @@ def draw_grid_figure(optional_title, fig, run = []):
 	clusters = run[2]
 
 	# Set up the figure and axes
- 	# fig = plt.figure('fig')
-
 	fig.clf() # Clear fig for reuse
 
 	ax = fig.add_subplot(111)
@@ -249,7 +300,7 @@ def draw_grid_figure(optional_title, fig, run = []):
 	# start list for legend entries/handles
  	legend_handles = []
 
-	Dx = 1.0 # grid size of our world
+	Dx = 1.0 # grid spacing of the world
 
 	colors = ['#44AA99', '#332288', '#88CCEE', '#117733', '#999933', '#DDCC77', '#CC6677', '#882255', '#AA4499']
 	spanned = False
@@ -274,7 +325,7 @@ def draw_grid_figure(optional_title, fig, run = []):
 	if spanned: legend_handles.append(span_cp)
 
 	# make a square on the world border
-	world_border = plt.Rectangle((0-Dx/2,0-Dx/2), (N+1)*Dx, (N+1)*Dx, color='black', alpha=1, fill=False, label='World Border')
+	world_border = plt.Rectangle((0-Dx/2,0-Dx/2), (N+1)*Dx, (N+1)*Dx, color='black', alpha=1, ls='dashed', fill=False, label='World Border')
 	ax.add_artist(world_border)
 	legend_handles.append(world_border)
 
@@ -282,7 +333,14 @@ def draw_grid_figure(optional_title, fig, run = []):
  	ax.legend(handles=legend_handles, bbox_to_anchor=(1.03, 1), borderaxespad=0, loc='upper left', fontsize='x-small')
 
 	# Annotate
-	ann_text = 'RNG Seed = %d\n$N =$ %d' % (seed, N)
+	ann_text = ''
+	if spanned:
+		ann_text = '$p_{c} =$ %2.3f' % (find_p(N, clusters))
+	else:
+		ann_text = '$p =$ %2.3f' % (find_p(N, clusters))
+	ann_text += '\n$N =$ %d' % (N)
+	ann_text += '\nRNG Seed = %d' % (seed)
+	ann_text += '\n\nNeighborhood:\n'+neighborhood
 
 	ax.text(1.0415, 0.65, ann_text, bbox=dict(edgecolor='black', facecolor='white', fill=False), size='x-small', transform=ax.transAxes)
 
@@ -291,19 +349,43 @@ def draw_grid_figure(optional_title, fig, run = []):
 	if(debugging): print 'draw_grid_figure() completed!!!'
 # end def for draw_grid_figure()
 
+# Define a function to find the mean pc for a given N, averaging over n_sim = 50 simulations
+# Create plot and animation for the first of the n_sim simulations
+# TODO Be careful to not use the same initial_seed/seed twice; do initial_seed += n_sim in larger loop
+def find_pc(N, initial_seed, m_path):
+	if(debugging): print 'Beginning find_pc()'
+
+	N_name = 'N_%d' % N
+
+	ps = []
+
+	for i in range(0, n_sim):
+		if(debugging2): print 'simulation number %d' % i
+		first = False
+		if i == 0: first = True
+		run = create_spanning_cluster(N, initial_seed+i, '', m_path, 'animation_'+N_name, first)
+		ps.append( find_p(N, run[2]) )
+		if first: plot_grid('', m_path, 'spanned_'+N_name, run)
+
+	if(debugging): print 'find_pc() completed!!!'
+
+	pc = np.mean(ps)
+
+	return pc
+ # end def for find_pc()
 
 
 # Define a function to plot the grid
+# needs to be separated to run the animation code nicely
 def plot_grid(optional_title, m_path, fname, run = []):
-	fig = plt.figure()
-	fig = draw_grid_figure(optional_title, fig, run)
+	fig2 = plt.figure()
+	fig2 = draw_grid_figure(optional_title, fig2, run)
 
 	# Print it out
 	make_path(m_path)
-	# fig.savefig(m_path+'/'+fname+'.png', dpi=900)
-	# if len(cluster) < 10**3: fig.savefig(m_path+'/'+fname+'.pdf')
-	fig.savefig(m_path+'/'+fname+'.pdf')
-	fig.clf() # Clear fig for reuse
+	fig2.savefig(m_path+'/'+fname+'.pdf')
+	fig2.clf() # Clear fig2 for reuse
+	plt.close(fig2) # Close fig2 to save memory
 
 	if(debugging): print 'plot_grid() completed!!!'
 # end def for plot_grid()
@@ -322,22 +404,40 @@ def plot_grid(optional_title, m_path, fname, run = []):
 if(True):
 	output_path = '../output/dev'
 	debugging = False
-	debugging2 = False
+	debugging2 = True
+	debugging3 = False
+	make_slides = False
 
-	# create_spanning_cluster(N, m_seed, optional_title, m_path, fname)
- 	run = create_spanning_cluster(10, 7, '', output_path, 'test_gif')
+	'''
+ 	run = create_spanning_cluster(10, 7, '', output_path, 'test_gif', True)
 	plot_grid('Spanned', output_path, 'spanned', run)
+	'''
 
-
+	# find_pc(N, initial_seed, m_path)
+	test_pc = find_pc(10, 0, output_path)
+	print 'test with N = 10, pc = %2.3f' % test_pc
 
 ########################################################
 ########################################################
 # Production Runs for paper 
 
 if(False):
-	output_path = '../output/plots_for_paper/problem_3'
+	top_output_path = '../output/plots_for_paper'
+
 	debugging = False
 	debugging2 = False
+	debugging3 = False
+	make_slides = False
+
+	# Part a
+	output_path = top_output_path+'/part_a'
+
+	# TODO Run part a code/top level functions here
+
+	# Part b
+	output_path = top_output_path+'/part_b'
+
+	# TODO Run part b code/top level functions here
 
 
 ########################################################
