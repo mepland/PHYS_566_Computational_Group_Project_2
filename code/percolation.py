@@ -84,12 +84,11 @@ def percolation():
         side3.add(grid[N-1][i])
         side4.add(grid[i][N-1])
     int_set = side1.intersection(side2, side3, side4)
-    if len(int_set) > 1:
+    int_set -= set([0])
+    if len(int_set) > 0:
         return True
-    if len(int_set) == 0:
+    else:
         return False
-    elif int_set.pop() != 0:
-        return True
 
 
 def position(n):
