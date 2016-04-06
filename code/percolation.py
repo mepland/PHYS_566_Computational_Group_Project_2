@@ -11,6 +11,7 @@ def percolate(**kwargs):
 
     N = kwargs.get('N', 20)
     show = kwargs.get('show', False)
+    fraction = kwargs.get('fraction', False)
 
     grid = np.zeros([N, N])     # initialize
     labels = set([0])              # tree set
@@ -33,12 +34,39 @@ def percolate(**kwargs):
             time.sleep(0.05)
         count += 1
 
-    p = float(count) / float(N * N)
-    clusters = len(labels) - 1
-    return p, clusters, grid
+    pc = float(count) / float(N * N)
+    # part a
+    if not fraction:
+        return pc, grid
+    # part b
+    frac = []
+    p = []
+    while count < N*N:
+        x, y = position(sq[count])    # new site
+        update(x, y)              # update the grid
+        count += 1
+        p_label = same_label()
+        p.append(float(count) / float(N * N))
+        frac.append(float(len(np.where(grid == p_label)[0])) / float(count))
+    p = np.array(p)
+    frac = np.array(frac)
+    return pc, p, frac, grid
 
 
-
+def same_label():
+    global N, grid, labels
+    side1 = set()
+    side2 = set()
+    side3 = set()
+    side4 = set()
+    for i in range(N):
+        side1.add(grid[0][i])
+        side2.add(grid[i][0])
+        side3.add(grid[N-1][i])
+        side4.add(grid[i][N-1])
+    int_set = side1.intersection(side2, side3, side4)
+    int_set -= set([0])
+    return list(int_set)[0]
 
 def percolation():
     """
@@ -56,12 +84,11 @@ def percolation():
         side3.add(grid[N-1][i])
         side4.add(grid[i][N-1])
     int_set = side1.intersection(side2, side3, side4)
-    if len(int_set) > 1:
+    int_set -= set([0])
+    if len(int_set) > 0:
         return True
-    if len(int_set) == 0:
+    else:
         return False
-    elif int_set.pop() != 0:
-        return True
 
 
 def position(n):

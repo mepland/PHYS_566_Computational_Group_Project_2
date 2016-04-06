@@ -417,8 +417,11 @@ if(True):
 #	test_pc = find_pc(5, 0, output_path, True)
 #	print 'test with N = 5, pc = %2.3f' % test_pc
 
-	test_pc = find_pc(80, 0, output_path, True)
-	print 'test with N = 80, pc = %2.3f' % test_pc
+	test_pc = find_pc(10, 0, output_path, True)
+	print 'test with N = 10, pc = %2.3f' % test_pc
+
+#	test_pc = find_pc(80, 0, output_path, True)
+#	print 'test with N = 80, pc = %2.3f' % test_pc
 
 
 
