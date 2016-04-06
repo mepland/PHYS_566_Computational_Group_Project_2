@@ -259,7 +259,7 @@ def create_spanning_cluster(N, m_seed, optional_title, m_path, fname, create_ani
 		# grab the last frame a few times so it lingers in the gif
 		if create_ani:
 			fig = draw_grid_figure(optional_title, fig, [N, m_seed, clusters])
-			for i in range(4):
+			for i in range(15):
 				writer.grab_frame()
 			fig.clf() # Clear fig for reuse
 
@@ -404,7 +404,7 @@ def plot_grid(optional_title, m_path, fname, run = []):
 if(True):
 	output_path = '../output/dev'
 	debugging = False
-	debugging2 = True
+	debugging2 = False
 	debugging3 = False
 	make_slides = False
 
