@@ -223,7 +223,7 @@ def create_spanning_cluster(N, m_seed, optional_title, m_path, fname, create_ani
 	span = False
 
 	n_try = 1
-	max_try = 2.0*N*N
+	max_try = 10.0*N*N
 	# max_try = 70 # set artificially low for debugging purposes...
 
 	with writer.saving(fig, gif_fname, 100):
@@ -259,7 +259,7 @@ def create_spanning_cluster(N, m_seed, optional_title, m_path, fname, create_ani
 		# grab the last frame a few times so it lingers in the gif
 		if create_ani:
 			fig = draw_grid_figure(optional_title, fig, [N, m_seed, clusters])
-			for i in range(15):
+			for i in range(20):
 				writer.grab_frame()
 			fig.clf() # Clear fig for reuse
 
@@ -352,7 +352,7 @@ def draw_grid_figure(optional_title, fig, run = []):
 # Define a function to find the mean pc for a given N, averaging over n_sim = 50 simulations
 # Create plot and animation for the first of the n_sim simulations
 # TODO Be careful to not use the same initial_seed/seed twice; do initial_seed += n_sim in larger loop
-def find_pc(N, initial_seed, m_path):
+def find_pc(N, initial_seed, m_path, create_ani):
 	if(debugging): print 'Beginning find_pc()'
 
 	N_name = 'N_%d' % N
@@ -363,7 +363,7 @@ def find_pc(N, initial_seed, m_path):
 		if(debugging2): print 'simulation number %d' % i
 		first = False
 		if i == 0: first = True
-		run = create_spanning_cluster(N, initial_seed+i, '', m_path, 'animation_'+N_name, first)
+		run = create_spanning_cluster(N, initial_seed+i, '', m_path, 'animation_'+N_name, first and create_ani)
 		ps.append( find_p(N, run[2]) )
 		if first: plot_grid('', m_path, 'spanned_'+N_name, run)
 
@@ -406,16 +406,21 @@ if(True):
 	debugging = False
 	debugging2 = False
 	debugging3 = False
-	make_slides = True
+	make_slides = False
 
 	'''
  	run = create_spanning_cluster(10, 7, '', output_path, 'test_gif', True)
 	plot_grid('Spanned', output_path, 'spanned', run)
 	'''
 
-	# find_pc(N, initial_seed, m_path)
-	test_pc = find_pc(10, 0, output_path)
-	print 'test with N = 10, pc = %2.3f' % test_pc
+	# find_pc(N, initial_seed, m_path, create_ani)
+#	test_pc = find_pc(5, 0, output_path, True)
+#	print 'test with N = 5, pc = %2.3f' % test_pc
+
+	test_pc = find_pc(80, 0, output_path, True)
+	print 'test with N = 80, pc = %2.3f' % test_pc
+
+
 
 ########################################################
 ########################################################
