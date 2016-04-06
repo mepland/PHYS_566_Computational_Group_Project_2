@@ -1,3 +1,7 @@
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.animation as animation
+
 import os
 import sys
 import numpy as np
@@ -7,7 +11,6 @@ from scipy.optimize import curve_fit
 import math
 import random
 
-import matplotlib.animation as animation
 
 ########################################################
 # Define a function to create the output dir
@@ -148,8 +151,27 @@ def create_next_cluster(index, N, clusters = []):
 	return clusters
 # end def for create_next_cluster()
 
-# Define a function to generate a clusters until one spans
-def create_spanning_cluster(N, m_seed):
+# Define a function to generate a clusters until one spans TODO 
+# also save an animation of a list of clusters lists
+def create_spanning_cluster(N, m_seed, optional_title, m_path, fname):
+
+	create_ani = False
+	if m_path != '' and fname != '':
+		create_ani = True
+		make_path(m_path)
+		make_path(m_path+'/slides')
+
+	# FFMpegWriter = animation.writers['ffmpeg']
+	gifWriter =  animation.writers['imagemagick']
+	
+	metadata = dict(title=optional_title, artist='Matplotlib', comment='')
+	# writer = FFMpegWriter(fps=10, metadata=metadata)
+	writer = gifWriter(metadata=metadata)
+	
+	fig = plt.figure()
+	
+
+	
 
 	random.seed(m_seed)
 
@@ -162,20 +184,38 @@ def create_spanning_cluster(N, m_seed):
 	max_try = 12*N
 	# max_try = 70 # set artificially low for debugging purposes...
 
-	while not span and n_try < max_try:
-		n_try += 1
-		clusters = create_next_cluster(n_try, N, clusters)
+	with writer.saving(fig, m_path+'/'+fname+'.gif', 100):
+		while not span and n_try < max_try:
+			n_try += 1
+			clusters = create_next_cluster(n_try, N, clusters)
 
-		if debugging: print 'checking span for %d clusters' % len(clusters)
 
-		i = 0
-		while i < len(clusters) and not span:
-			span = clusters[i].spanning(N)
-			i += 1
+			fig = draw_grid_figure(optional_title, fig, [N, m_seed, clusters])
+			writer.grab_frame()
+	
+			m_name = m_path+'/slides/'+fname+'_n_try_%d.pdf' % n_try
+			fig.savefig(m_name)
+	
+			fig.clf() # Clear fig for reuse
+
+
+
+			if debugging: print 'checking span for %d clusters' % len(clusters)
+
+			i = 0
+			while i < len(clusters) and not span:
+				span = clusters[i].spanning(N)
+				i += 1
+		
+
+
+
+
+
+
 
 	if n_try >= max_try:
 		print 'create_spanning_cluster timed out!'
-
 
 	return [N, m_seed, clusters]
 
@@ -183,7 +223,7 @@ def create_spanning_cluster(N, m_seed):
 
 
 # Define a function to draw the grid
-def draw_grid_figure(optional_title, run = []):
+def draw_grid_figure(optional_title, fig, run = []):
 	if(debugging): print 'Beginning draw_grid_figure()'
 
 	N = run[0]
@@ -191,7 +231,10 @@ def draw_grid_figure(optional_title, run = []):
 	clusters = run[2]
 
 	# Set up the figure and axes
- 	fig = plt.figure('fig')
+ 	# fig = plt.figure('fig')
+
+	fig.clf() # Clear fig for reuse
+
 	ax = fig.add_subplot(111)
 	ax.set_title(optional_title)
 	ax.set_xlabel('$x$')
@@ -208,22 +251,26 @@ def draw_grid_figure(optional_title, run = []):
 
 	Dx = 1.0 # grid size of our world
 
-	colors = ['#332288', '#88CCEE', '#44AA99', '#117733', '#999933', '#DDCC77', '#CC6677', '#882255', '#AA4499']
+	colors = ['#44AA99', '#332288', '#88CCEE', '#117733', '#999933', '#DDCC77', '#CC6677', '#882255', '#AA4499']
 	spanned = False
 
 	# plot the clusters
+	first_nonspanning_ij = True
 	for i in range(len(clusters)):
 		span = clusters[i].spanning(N)
 		for j in range(len(clusters[i].member_points)):
 			if not span:
 				cp = plt.Rectangle((clusters[i].member_points[j][0]-Dx/2, clusters[i].member_points[j][1]-Dx/2), Dx, Dx, color=colors[i%len(colors)], alpha=0.4, fill=True, label='Non-Spanning\nClusters')
 				ax.add_artist(cp)
+
+				if first_nonspanning_ij:
+					first_nonspanning_ij = False
+					legend_handles.append(cp)
 			else:
 				spanned = True
 				span_cp = plt.Rectangle((clusters[i].member_points[j][0]-Dx/2, clusters[i].member_points[j][1]-Dx/2), Dx, Dx, color='blue', alpha=0.95, fill=True, label='Spanning\nCluster')
 				ax.add_artist(span_cp)
 
-	legend_handles.append(cp)
 	if spanned: legend_handles.append(span_cp)
 
 	# make a square on the world border
@@ -248,7 +295,8 @@ def draw_grid_figure(optional_title, run = []):
 
 # Define a function to plot the grid
 def plot_grid(optional_title, m_path, fname, run = []):
-	fig = draw_grid_figure(optional_title, run)
+	fig = plt.figure()
+	fig = draw_grid_figure(optional_title, fig, run)
 
 	# Print it out
 	make_path(m_path)
@@ -260,24 +308,7 @@ def plot_grid(optional_title, m_path, fname, run = []):
 	if(debugging): print 'plot_grid() completed!!!'
 # end def for plot_grid()
 
-# TODO finish writting ani and it's hooks in the program later tonight
-'''
-# Define a function to save an animation of a list of clusters lists
-def ani(optional_title, m_path, fname, runs = []):
 
-	for i in range(len(runs)):
-		fig = draw_grid_figure(optional_title, run)
-
-	# Print it out
-	make_path(m_path)
-	# fig.savefig(m_path+'/'+fname+'.png', dpi=900)
-	# if len(cluster) < 10**3: fig.savefig(m_path+'/'+fname+'.pdf')
-	fig.savefig(m_path+'/'+fname+'.pdf')
-	fig.clf() # Clear fig for reuse
-
-	if(debugging): print 'plot_grid() completed!!!'
-# end def for plot_grid()
-'''
 
 ########################################################
 ########################################################
@@ -293,25 +324,10 @@ if(True):
 	debugging = False
 	debugging2 = False
 
-	'''
-	m_seed = 7
-	N = 10
+	# create_spanning_cluster(N, m_seed, optional_title, m_path, fname)
+ 	run = create_spanning_cluster(10, 7, '', output_path, 'test_gif')
+	plot_grid('Spanned', output_path, 'spanned', run)
 
-	random.seed(m_seed)
-
-	clusters = []
-	clusters.append(cluster(-9, N))
-
-	for i in range(10):
-		clusters = create_next_cluster(-9, N, clusters)
-
-	# plot_grid(optional_title, m_path, fname, run = [])
-
-	plot_grid('test', output_path, 'test', [N, m_seed, clusters])
-	'''
-
- 	spanned_grid = create_spanning_cluster(10, 7)
-	plot_grid('Spanned', output_path, 'spanned', spanned_grid)
 
 
 ########################################################
