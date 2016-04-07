@@ -104,16 +104,107 @@ def part_a(m_path):
 	if(debugging): print 'part_a() completed!!!'
 # end def for part_a
 
-	'''
+
+
+# Define a function to do part b plotting and fitting
+def part_b(m_path):
+	if(debugging): print 'Beginning part_b()'
+
 	# setup data
-	max_count = np.load('../output/part b/max_count.npy')
-	pc_ave = np.load('../output/part b/pc.npy')
 	F_ave = np.load('../output/part b/F.npy')
 	p = np.array([float(i+1)/10000.0 for i in range(len(F_ave))])
-	plt.scatter(np.log(p), np.log(F_ave))
-	y = 5.0/36.0 * np.log(p)   # reference line
-	plt.plot(np.log(p), y, color='r')
-	'''
+		
+	# setup data to fit
+	fit_range_min = 6*10**-3
+	fit_range_max = 6*10**-2
+
+	F_ave_fit_list = []
+	p_fit_list = []
+
+	for i in range(p.size):
+		if fit_range_min <= p[i] and p[i] <= fit_range_max:
+			F_ave_fit_list.append(F_ave[i])
+			p_fit_list.append(p[i])
+
+	F_ave_fit = np.array(F_ave_fit_list)
+	p_fit = np.array(p_fit_list)
+
+
+
+	# Set up the figure and axes
+	fig = plt.figure('fig')
+	ax = fig.add_subplot(111)
+	ax.set_xlabel('$p$')
+	ax.set_ylabel('$<F(p>p_{c})>$')
+
+	# Make the axis log log
+	ax.set_xscale('log')
+	ax.set_yscale('log')
+
+        # Create the plot
+	# ax.scatter(p, F_ave, marker='o', label='$<F(p>p_{c})>$', c='blue')
+        ax.plot(p, F_ave, marker=None, ls='solid', label='$<F(p>p_{c})>$', c='blue')
+
+
+        # Fitting 
+        ########################################################
+
+        ########################################################
+        # Define the power law fit function
+        def power_law_fit_function(n_data, pow_fit, slope_fit):
+                return slope_fit*pow(n_data, pow_fit)
+        # end def power_law_fit_function
+
+        # actually perform the fits
+        # op_par = optimal parameters, covar_matrix has covariance but no errors on plot so it's incorrect...
+
+        power_p0 = [5.0/36.0, 1.0]
+        power_fit_status = True
+
+        maxfev=m_maxfev = 2000
+
+        fit_text = ''
+
+	try:
+		power_op_par, power_covar_matrix = curve_fit(power_law_fit_function, p_fit, F_ave_fit, p0=power_p0, maxfev=m_maxfev)
+	except RuntimeError:
+		print sys.exc_info()[1]
+		print 'power curve_fit failed, continuing...'
+		power_fit_status = False
+
+	# plot the fit
+	if(power_fit_status):
+		power_fit_line, = ax.plot(p, power_law_fit_function(p, *power_op_par), ls='solid', label='Power Law Fit', c="black")
+		fit_boundary_line = ax.axvline(x=fit_range_min, ls = 'dashed', label='Fit Boundary', c='grey')
+		fit_boundary_line = ax.axvline(x=fit_range_max, ls = 'dashed', label=None, c='grey')
+
+	# Write out the fit parameters
+	fit_text = 'Power Law Fit Function: $<F(p>p_{c})>(p) = F_{0}(p-p_{c})^{\\beta}$'
+	if(power_fit_status):
+		fit_text += '\n$\\beta_{\mathrm{Expected}} =$ %2.2f\n$\\beta_{\mathrm{Fit}} =$ %2.5f' % (power_p0[0], power_op_par[0])
+		fit_text += '\n$F_{0\,\mathrm{Fit}} =$ %2.5f' % (power_op_par[1])
+	else:
+		fit_text += '\nPower Law Fit Failed'
+
+        # adjust axis range
+        ax.set_xlim((5.0*10**-5, 1.0))
+        ax.set_ylim((3*10**-1, 2*10**0))
+	
+
+        # Draw the legend
+        ax.legend(loc='upper right', bbox_to_anchor=(0.98, 0.98), borderaxespad=0, fontsize='x-small')
+
+	# Print the fit parameters
+	ax.text(0.025, 1-0.03, fit_text, bbox=dict(edgecolor='black', facecolor='white', fill=True), size='x-small', transform=ax.transAxes, va='top')
+
+        # Print it out
+        make_path(m_path)
+        fig.savefig(m_path+'/F_ave_vs_p.pdf')
+
+        fig.clf() # Clear fig for reuse
+
+	if(debugging): print 'part_b() completed!!!'
+# end def for part_b
 
 
 ########################################################
@@ -125,33 +216,27 @@ def part_a(m_path):
 ########################################################
 # Development Runs 
 
-if(True):
+if(False):
 	output_path = '../output/dev'
 	debugging = True
 
-	part_a(output_path)
-#	part_b(output_path)
+	# part_a(output_path)
+	# part_b(output_path)
 
 ########################################################
 ########################################################
 # Production Runs for paper 
 
-if(False):
-	top_output_path = '../output/plots_for_paper'
+if(True):
+	output_path = '../output/plots_for_paper'
 
-	debugging = False
+	debugging = True
 
 	# Part a
-	output_path = top_output_path+'/part_a'
-
 	part_a(output_path)
 
-	# TODO Run part a code/top level functions here
-
 	# Part b
-	output_path = top_output_path+'/part_b'
-
-	# TODO Run part b code/top level functions here
+	part_b(output_path)
 
 
 ########################################################
