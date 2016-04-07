@@ -131,6 +131,47 @@
 \end{frame}
 
 
+\begin{frame}
+	\frametitle{Union-Find Algorithms}
+	\begin{itemize}
+		\item Data structure
+			\begin{itemize}
+			\item Integer array {\tt label[i]} of size $N\times N$.
+			\item interpretation: {\tt p} and {\tt q} are connected if they have the same label.
+			\end{itemize}
+		\item Find: Check if {\tt p} and {\tt q} have the same label.
+		\item Union: To merge components containing {\tt p} and {\tt q}, change all entries with {\tt label[p]} to {\tt label[q]}.
+	\end{itemize}
+\end{frame}
+
+\begin{frame}
+	\frametitle{Percolation}
+	\begin{itemize}
+		\item Initialization \qquad
+			\begin{tabular}{|l|c|r|}
+				\hline
+				0 & 0 & 0 \\ \hline
+				0 & 0 & 0 \\ \hline
+				0 & 0 & 0 \\	 \hline
+			\end{tabular}
+		\item Generate a random sequence from 0 to $N^2-1$:\\
+			\qquad {\tt arr = shuffle([0, 1, 2,..., N*N-1])}
+		\item Occupy a site given by {\tt arr[i]}.
+		\item Union: Choose a common unique label and update {\tt label}.
+		\item Percolation
+			\begin{itemize}
+				\item Data structure: TreeSet.
+				\item $S = \{{\mathrm{Edge}_{1}}\} \cap \{{\mathrm{Edge}_{2}}\} \cap \{{\mathrm{Edge}_{3}}\} \cap \{{\mathrm{Edge}_{4}}\} - \{0 \}$
+				\item $
+						S = \begin{cases}
+ 								\O & \qquad \text{unconnected,}\\
+ 								\{x\} & \qquad \text{connected}, x \text{ is the same label.}
+ 							\end{cases}
+					  $
+			\end{itemize}
+		\item \href{run:movie.avi}{Animation}
+	\end{itemize}
+\end{frame}
 
 \end{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
