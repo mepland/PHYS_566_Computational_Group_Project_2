@@ -36,21 +36,25 @@ def percolate(**kwargs):
 
     pc = float(count) / float(N * N)
     # part a
+    """
+    p_label = same_label()
+    f = float(len(np.where(grid == p_label)[0])) / float(count)
+    print f
+    """
     if not fraction:
         return pc, grid
     # part b
     frac = []
-    p = []
+    pc_count = count
     while count < N*N:
         x, y = position(sq[count])    # new site
         update(x, y)              # update the grid
         count += 1
         p_label = same_label()
-        p.append(float(count) / float(N * N))
-        frac.append(float(len(np.where(grid == p_label)[0])) / float(count))
-    p = np.array(p)
+        f = float(len(np.where(grid == p_label)[0])) / float(count)
+        frac.append(f)
     frac = np.array(frac)
-    return pc, p, frac, grid
+    return pc, pc_count, frac, grid
 
 
 def same_label():

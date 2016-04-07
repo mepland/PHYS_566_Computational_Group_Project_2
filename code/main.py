@@ -1,6 +1,7 @@
 from percolation import percolate
 import matplotlib.pyplot as plt
 import numpy as np
+from scipy.optimize import curve_fit
 
 ######################## Documentation ###############################################
 # from percolation import percolate                                                  #
@@ -13,7 +14,7 @@ import numpy as np
 ############################# Test ##############################
 # real-time plotting
 if False:
-    pc, grid = percolate(N=20, show=False)
+    pc, grid = percolate(N=100, show=False)
     plt.close()
     # plot the figure at p = pc
     plt.imshow(grid, origin='lower', interpolation='nearest')
@@ -42,22 +43,36 @@ if False:
     # TODO curve-fitting
 
 ############################ Part b #############################
+def func(x, a, b):
+    return a * x + b
+
 if True:
     if False:
         F_ave = np.zeros(100*100)
-        for i in range(100):
+        counter = np.zeros(100*100)
+        max_count = 0
+        pc_ave = 0.0
+        for i in range(50):
             print i
-            pc, p, frac, grid = percolate(N=100, fraction='True')
-            p -= pc
-            if len(F_ave) <= len(p):
-                F_ave = F_ave + p[0: len(F_ave)]
-            else:
-                F_ave = F_ave[0: len(p)] + p
-        F_ave /= 100.0
-        np.save('../output/part b/F',F_ave)
+            pc, pc_count, frac, grid = percolate(N=100, fraction='True')
+            F_ave[0: len(frac)] += frac
+            counter[0: len(frac)] += 1.0
+            pc_ave += pc
+            if len(frac) > max_count:
+                max_count = len(frac)
+        pc_ave /= 50.0
+        for i in range(0, max_count):
+            F_ave[i] /= counter[i]
+        np.save('../output/part b/max_count', max_count)
+        np.save('../output/part b/pc', pc_ave)
+        np.save('../output/part b/F', F_ave)
 
+    max_count = np.load('../output/part b/max_count.npy')
+    pc_ave = np.load('../output/part b/pc.npy')
     F_ave = np.load('../output/part b/F.npy')
-
-    x = [float(i)/(100.0**2) for i in range(1, len(F_ave)+1)]
-    plt.loglog(x, F_ave)
+    p = np.array([float(i+1)/10000.0 for i in range(len(F_ave))])
+    plt.scatter(np.log(p), np.log(F_ave))
+    y = 5.0/36.0 * np.log(p)   # reference line
+    plt.plot(np.log(p), y, color='r')
     plt.show()
+    # TODO linear-fit
