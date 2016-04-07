@@ -151,7 +151,7 @@
 		\item Data structure
 			\begin{itemize}
 			\item Integer array {\tt label[i]} of size $N\times N$.
-			\item interpretation: {\tt p} and {\tt q} are connected if they have the same label.
+			\item Interpretation: {\tt p} and {\tt q} are connected if they have the same label.
 			\end{itemize}
 		\item Find: Check if {\tt p} and {\tt q} have the same label.
 		\item Union: To merge components containing {\tt p} and {\tt q}, change all entries with {\tt label[p]} to {\tt label[q]}.
@@ -180,7 +180,7 @@
 				\item $
 						S = \begin{cases}
  								\O & \qquad \text{unconnected,}\\
- 								\{x\} & \qquad \text{connected}, x \text{ is the same label.}
+ 								\{x\} & \qquad \text{connected}, x \text{ is the same label of the spanning cluster.}
  							\end{cases}
 					  $
 			\end{itemize}
