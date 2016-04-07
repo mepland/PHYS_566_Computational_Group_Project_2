@@ -92,11 +92,11 @@
 \usepackage[protrusion=true,expansion=true]{microtype}
 \usepackage{amsmath}
 \renewcommand*{\thefootnote}{\fnsymbol{footnote}}
-\title[Group Project 1]{Group Project 1\newline Random Walk, Diffusion and Cluster Growth}
+\title[Group Project 2]{Group Project 2\newline Percolation}
 \author[Xu, Epland, Li, Cohen]{{\small Yuanyuan Xu, Matthew Epland, Xiaqing Li, Wesley Cohen}}
 \institute{Duke University}
 %\date{\today}
-\date{March 25, 2016}
+\date{April 8, 2016}
 \hypersetup{
     breaklinks,
     baseurl       = http://,
@@ -121,12 +121,26 @@
 \frame{\titlepage}
 \addtobeamertemplate{frametitle}{}{}
 
+\
+
 
 \begin{frame}
-	\frametitle{Overview}
+	\frametitle{Introduction -- Part A}
+	Percolation transition on a $N\times N$ lattice:
 	\begin{itemize}
-		\item In Part A, 
-		\item In Part B, 
+		\item Sites are subsequently and randomly occupied
+		\item A cluster -- a collection of interconnection occupied sites
+		\begin{itemize}
+			\item A \textbf{spanning cluster} touches all four edges of the lattice
+			\item Percolation transition -- when the spanning cluster occurs
+		\end{itemize}
+		\item Occupation probability: 
+			\begin{equation}
+			p=\frac{\text{number of occupied sites}}{N^2}
+			\end{equation}
+		\begin{itemize}
+			\item At the \textbf{critical concentration $p_c$} percolation transition occurs
+		\end{itemize}
 	\end{itemize}
 \end{frame}
 
@@ -137,12 +151,13 @@
 		\item Data structure
 			\begin{itemize}
 			\item Integer array {\tt label[i]} of size $N\times N$.
-			\item Interpretation: {\tt p} and {\tt q} are connected if they have the same label.
+			\item interpretation: {\tt p} and {\tt q} are connected if they have the same label.
 			\end{itemize}
 		\item Find: Check if {\tt p} and {\tt q} have the same label.
 		\item Union: To merge components containing {\tt p} and {\tt q}, change all entries with {\tt label[p]} to {\tt label[q]}.
 	\end{itemize}
 \end{frame}
+
 
 \begin{frame}
 	\frametitle{Percolation}
@@ -165,13 +180,72 @@
 				\item $
 						S = \begin{cases}
  								\O & \qquad \text{unconnected,}\\
- 								\{x\} & \qquad \text{connected}, x \text{ is the same label of spanned cluster.}
+ 								\{x\} & \qquad \text{connected}, x \text{ is the same label.}
  							\end{cases}
 					  $
 			\end{itemize}
 		\item \href{run:movie.avi}{Animation}
 	\end{itemize}
 \end{frame}
+
+
+\begin{frame}
+	\frametitle{Extract $p_c$ of infinitely large 2D square lattice}
+	\begin{itemize}
+		\item Determine the value of $p_c$ for 2D square lattice of different lengths \\
+		 \begin{itemize}
+			\item $N= 5, 10, 15, 20, 30, 50, 80$		
+		\end{itemize}
+		 \bigskip
+		 \item For each lattice size: average the results for 50 different simulations
+		 \bigskip
+		 \item Plot $p_c(N^{-1})$ to extrapolate to the infinite lattice limit
+		 \begin{itemize}
+		 	\smallskip
+			\item $N^{-1}\rightarrow 0,\  p_c \rightarrow p_c \  \textit{of infinitely large lattice}$	
+		\end{itemize}
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Resutls}
+	\begin{figure}
+  	\centering
+  	\includegraphics[width=0.9\textwidth]{../output/dev/pc_ave_vs_InverseN.pdf}
+	\end{figure}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Introduction -- Part B}
+	Fraction of sites in percolating cluster
+	\begin{itemize}
+		\item Definition:
+			\begin{equation}
+			F(p>p_c)=\frac{\text{number of sites in spanning cluster}}{\text{number of occupied sites}}
+			\end{equation}
+		\item $F$ near $p_c$ satisfies power law:
+			\begin{equation}
+			F=F_0(p-p_c)^\beta
+			\end{equation}
+		\item Extract $\beta$
+			\begin{itemize}
+				\item Linear fitting on the log-log scale plot
+			\end{itemize}
+	\end{itemize}
+\end{frame}
+
+
+\begin{frame}
+	\frametitle{Resutls}
+	\begin{figure}
+  	\centering
+  	\includegraphics[width=0.9\textwidth]{../output/dev/F_ave_vs_p.pdf}
+	\end{figure}
+\end{frame}
+
+
 
 \end{document}
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
