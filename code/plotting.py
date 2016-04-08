@@ -139,7 +139,7 @@ def part_b(m_path):
 	# Set up the figure and axes
 	fig = plt.figure('fig')
 	ax = fig.add_subplot(111)
-	ax.set_xlabel('$p$')
+	ax.set_xlabel('$p - p_{c}$')
 	ax.set_ylabel(r'$\langle F(p>p_{c}) \rangle$')
 
         # Create the plot
