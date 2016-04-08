@@ -31,17 +31,17 @@ def part_a(m_path):
 	InverseN = np.array(InverseN_list)
 	
 	# setup data to fit
-	ave_pc_fit = np.delete(ave_pc, 0)
-	InverseN_fit = np.delete(InverseN, 0)
+	ave_pc_fit = np.delete(ave_pc, [0, 1])
+	InverseN_fit = np.delete(InverseN, [0, 1])
 
 	# Set up the figure and axes
 	fig = plt.figure('fig')
 	ax = fig.add_subplot(111)
-	ax.set_xlabel('$N^{-1}$')
-	ax.set_ylabel('$<p_{c}>$')
+	ax.set_xlabel(r'$N^{-1}$')
+	ax.set_ylabel(r'$\langle p_{c} \rangle$')
 
         # Create the plot
-        ax.scatter(InverseN, ave_pc, marker='o', label='$<p_{c}>$', c='blue')
+        ax.scatter(InverseN, ave_pc, marker='o', edgecolor='blue', label=r'$\langle p_{c} \rangle$', c='blue')
 
         # Fitting 
         ########################################################
@@ -75,7 +75,7 @@ def part_a(m_path):
 		fit_boundary_line = ax.axvline(x=InverseN_fit[0], ls = 'dashed', label='Fit Boundary', c='grey')
 
 	# Write out the fit parameters
-	fit_text = 'Linear Fit Function: $<p_{c}>(N^{-1}) = p_{c\,0} + b N^{-1}$'
+	fit_text = r'Linear Fit Function: $\langle p_{c}\rangle (N^{-1}) = p_{c\,0} + b N^{-1}$'
 	if(linear_fit_status):
 		fit_text += '\n$p_{c\,0\,\mathrm{Expected}} =$ %2.2f\n$p_{c\,0\,\mathrm{Fit}} =$ %2.5f' % (linear_p0[0], linear_op_par[0])
 #		fit_text += '\n$b_{\mathrm{Expected}} =$ %2.2f, $b_{\mathrm{Fit}} =$ %2.5f' % (linear_p0[1], linear_op_par[1])
@@ -135,7 +135,7 @@ def part_b(m_path):
 	fig = plt.figure('fig')
 	ax = fig.add_subplot(111)
 	ax.set_xlabel('$p$')
-	ax.set_ylabel('$<F(p>p_{c})>$')
+	ax.set_ylabel(r'$\langle F(p>p_{c}) \rangle$')
 
 	# Make the axis log log
 	ax.set_xscale('log')
@@ -143,7 +143,7 @@ def part_b(m_path):
 
         # Create the plot
 	# ax.scatter(p, F_ave, marker='o', label='$<F(p>p_{c})>$', c='blue')
-        ax.plot(p, F_ave, marker=None, ls='solid', label='$<F(p>p_{c})>$', c='blue')
+        ax.plot(p, F_ave, marker=None, ls='solid', label=r'$\langle F(p>p_{c}) \rangle$', c='blue')
 
 
         # Fitting 
@@ -179,7 +179,7 @@ def part_b(m_path):
 		fit_boundary_line = ax.axvline(x=fit_range_max, ls = 'dashed', label=None, c='grey')
 
 	# Write out the fit parameters
-	fit_text = 'Power Law Fit Function: $<F(p>p_{c})>(p) = F_{0}(p-p_{c})^{\\beta}$'
+	fit_text = r'Power Law Fit Function: $\langle F(p>p_{c}) \rangle (p) = F_{0}(p-p_{c})^{\beta}$'
 	if(power_fit_status):
 		fit_text += '\n$\\beta_{\mathrm{Expected}} =$ %2.2f\n$\\beta_{\mathrm{Fit}} =$ %2.5f' % (power_p0[0], power_op_par[0])
 		fit_text += '\n$F_{0\,\mathrm{Fit}} =$ %2.5f' % (power_op_par[1])
