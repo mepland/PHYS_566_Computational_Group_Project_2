@@ -36,11 +36,6 @@ def percolate(**kwargs):
 
     pc = float(count) / float(N * N)
     # part a
-    """
-    p_label = same_label()
-    f = float(len(np.where(grid == p_label)[0])) / float(count)
-    print f
-    """
     if not fraction:
         return pc, grid
     # part b
