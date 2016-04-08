@@ -148,7 +148,7 @@ def part_b(m_path):
 
 
         # adjust axis range
-        ax.set_xlim((5.0*10**-5, 1.0))
+        ax.set_xlim((5.0*10**-5, 0.4))
         ax.set_ylim((3*10**-1, 2*10**0))
 
         # Fitting 
@@ -191,7 +191,7 @@ def part_b(m_path):
 	if(power_fit_status):
 		fit_text += '\n$\\beta_{\mathrm{Expected}} =$ %2.2f\n$\\beta_{\mathrm{Fit}} =$ %2.5f' % (power_p0[0], power_op_par[0])
 		fit_text += '\n$F_{0\,\mathrm{Fit}} =$ %2.5f' % (power_op_par[1])
-		fit_text += '\nFit Range: %2.2f $< p <$ %2.2f' % (fit_range_min, fit_range_max)
+		fit_text += '\nFit Range: %2.2f $< p-p_{c} <$ %2.2f' % (fit_range_min, fit_range_max)
 	else:
 		fit_text += '\nPower Law Fit Failed'
 
