@@ -38,10 +38,16 @@ def part_a(m_path):
 	fig = plt.figure('fig')
 	ax = fig.add_subplot(111)
 	ax.set_xlabel('$N^{-1}$')
-	ax.set_ylabel('$<p_{c}>$')
+	ax.set_ylabel('$\left<p_{c}\\right>$')
 
         # Create the plot
-        ax.scatter(InverseN, ave_pc, marker='o', label='$<p_{c}>$', c='blue')
+        ax.scatter(InverseN, ave_pc, marker='o', label='$\left<p_{c}\\right>$', c='blue')
+
+        # adjust axis range
+	zoom = 0.01
+        x1,x2,y1,y2 = ax.axis()
+        ax.set_xlim((0.0, (1+zoom)*x2))
+        ax.set_ylim(((1-zoom)*y1, (1+zoom)*y2))
 
         # Fitting 
         ########################################################
@@ -70,24 +76,23 @@ def part_a(m_path):
 		linear_fit_status = False
 
 	# plot the fit
+        x1,x2,y1,y2 = ax.axis()
+	fit_x = np.linspace(x1, x2, 1000)
+
 	if(linear_fit_status):
-		linear_fit_line, = ax.plot(InverseN, linear_fit_function(InverseN, *linear_op_par), ls='solid', label='Linear Fit', c="black")
+		linear_fit_line, = ax.plot(fit_x, linear_fit_function(fit_x, *linear_op_par), ls='solid', label='Linear Fit', c="black")
 		fit_boundary_line = ax.axvline(x=InverseN_fit[0], ls = 'dashed', label='Fit Boundary', c='grey')
 
 	# Write out the fit parameters
-	fit_text = 'Linear Fit Function: $<p_{c}>(N^{-1}) = p_{c\,0} + b N^{-1}$'
+	fit_text = 'Linear Fit Function: $\left<p_{c}\\right>\left(N^{-1}\\right) = p_{c\,0} + b N^{-1}$'
 	if(linear_fit_status):
 		fit_text += '\n$p_{c\,0\,\mathrm{Expected}} =$ %2.2f\n$p_{c\,0\,\mathrm{Fit}} =$ %2.5f' % (linear_p0[0], linear_op_par[0])
 #		fit_text += '\n$b_{\mathrm{Expected}} =$ %2.2f, $b_{\mathrm{Fit}} =$ %2.5f' % (linear_p0[1], linear_op_par[1])
 		fit_text += '\n$b_{\mathrm{Fit}} =$ %2.5f' % (linear_op_par[1])
+		fit_text += '\nFit Range: $N^{-1} <$ %2.2f' % (InverseN_fit[0])
 	else:
 		fit_text += '\nLinear Fit Failed'
 
-        # adjust axis range
-	zoom = 0.01
-        x1,x2,y1,y2 = ax.axis()
-        ax.set_xlim((0.0, (1+zoom)*x2))
-        ax.set_ylim(((1-zoom)*y1, (1+zoom)*y2))
 
         # Draw the legend
         ax.legend(loc='upper right', bbox_to_anchor=(0.98, 0.98), borderaxespad=0, fontsize='x-small')
@@ -135,16 +140,15 @@ def part_b(m_path):
 	fig = plt.figure('fig')
 	ax = fig.add_subplot(111)
 	ax.set_xlabel('$p$')
-	ax.set_ylabel('$<F(p>p_{c})>$')
-
-	# Make the axis log log
-	ax.set_xscale('log')
-	ax.set_yscale('log')
+	ax.set_ylabel('$\left<F(p > p_{c})\\right>$')
 
         # Create the plot
 	# ax.scatter(p, F_ave, marker='o', label='$<F(p>p_{c})>$', c='blue')
-        ax.plot(p, F_ave, marker=None, ls='solid', label='$<F(p>p_{c})>$', c='blue')
+        ax.plot(p, F_ave, marker=None, ls='solid', label='$\left<F(p > p_{c})\\right>$', c='blue')
 
+        # adjust axis range
+        ax.set_xlim((5.0*10**-5, 1.0))
+        ax.set_ylim((3*10**-1, 2*10**0))
 
         # Fitting 
         ########################################################
@@ -173,23 +177,23 @@ def part_b(m_path):
 		power_fit_status = False
 
 	# plot the fit
+	x1,x2,y1,y2 = ax.axis()
+	fit_x = np.linspace(x1, x2, 1000)
+
 	if(power_fit_status):
-		power_fit_line, = ax.plot(p, power_law_fit_function(p, *power_op_par), ls='solid', label='Power Law Fit', c="black")
+		power_fit_line, = ax.plot(fit_x, power_law_fit_function(fit_x, *power_op_par), ls='solid', label='Power Law Fit', c="black")
 		fit_boundary_line = ax.axvline(x=fit_range_min, ls = 'dashed', label='Fit Boundary', c='grey')
 		fit_boundary_line = ax.axvline(x=fit_range_max, ls = 'dashed', label=None, c='grey')
 
 	# Write out the fit parameters
-	fit_text = 'Power Law Fit Function: $<F(p>p_{c})>(p) = F_{0}(p-p_{c})^{\\beta}$'
+	fit_text = 'Power Law Fit Function: $\left<F(p > p_{c})\\right>(p) = F_{0}(p-p_{c})^{\\beta}$'
 	if(power_fit_status):
 		fit_text += '\n$\\beta_{\mathrm{Expected}} =$ %2.2f\n$\\beta_{\mathrm{Fit}} =$ %2.5f' % (power_p0[0], power_op_par[0])
 		fit_text += '\n$F_{0\,\mathrm{Fit}} =$ %2.5f' % (power_op_par[1])
+		fit_text += '\nFit Range: %2.2f $< p <$ %2.2f' % (fit_range_min, fit_range_max)
 	else:
 		fit_text += '\nPower Law Fit Failed'
 
-        # adjust axis range
-        ax.set_xlim((5.0*10**-5, 1.0))
-        ax.set_ylim((3*10**-1, 2*10**0))
-	
 
         # Draw the legend
         ax.legend(loc='upper right', bbox_to_anchor=(0.98, 0.98), borderaxespad=0, fontsize='x-small')
@@ -199,7 +203,14 @@ def part_b(m_path):
 
         # Print it out
         make_path(m_path)
-        fig.savefig(m_path+'/F_ave_vs_p.pdf')
+
+	fig.savefig(m_path+'/F_ave_vs_p_linearScale.pdf')
+
+	# Make the axis log log
+	ax.set_xscale('log')
+	ax.set_yscale('log')
+       
+	fig.savefig(m_path+'/F_ave_vs_p.pdf')
 
         fig.clf() # Clear fig for reuse
 
