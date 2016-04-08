@@ -9,7 +9,7 @@
 \maketitle
 
 \section{Introduction}
-\indent \indent In our project, we wrote a program to simulate the percolation transition on a lattice with N x N dimensions. Percolation is the movement of a fluid through a porous material. One example of percolation is water flowing through soil.  
+\indent \indent In our project, we wrote a program to simulate the percolation transition on a lattice with $N \times N$ dimensions. Percolation is the movement of a fluid through a porous material. One example of percolation is water flowing through soil.  
 
 This project has two parts.
 
@@ -23,7 +23,7 @@ This project has two parts.
 
 \subsection{Part A}
 \indent \indent Throughout this problem, we used the random number generator.
- In the first part, each spot in the N x N lattice is set equal to 0. Then, clusters are created using the random number generator. First, a random number is generated, which determines where in the lattice the first cluster is placed. This lattice point is assigned a value of 1. Next, another random number is chosen, which corresponds to another point in the lattice. If this new lattice point neighbors the point in the lattice that is already occupied, it is assigned a value of 1. Otherwise, a new cluster with value 2 is created.  \newline
+ In the first part, each spot in the $N \times N$ lattice is set equal to 0. Then, clusters are created using the random number generator. First, a random number is generated, which determines where in the lattice the first cluster is placed. This lattice point is assigned a value of 1. Next, another random number is chosen, which corresponds to another point in the lattice. If this new lattice point neighbors the point in the lattice that is already occupied, it is assigned a value of 1. Otherwise, a new cluster with value 2 is created.  \newline
  \indent Also, after several spots on the lattice have been filled, if there is more than one cluster neighboring a point, this new sites bridges multiple existing clusters. In this case, the clusters neighboring this point are merged together to form a single cluster. This process is continued until there is a common cluster that touches all four edges of the lattice. \newline
  
 \indent Next, $p_c$ is calculated from:
@@ -47,7 +47,7 @@ F(p>p_c)=\frac{\text{number of sites in spanning cluster}}{\text{number of occup
 F=F_0(p-p_c)^\beta
 \end{equation}
 
-where $F$ is the fraction of sites in the spanning cluster, $F_0$ is the initial value of $F$, and $\beta$ is a constant equal to 5/36. The value of $\beta$ is for two dimensional lattices only.\newline
+where $F$ is the fraction of sites in the spanning cluster, $F_0$ is the initial value of $F$, and $\beta$ is a constant is expected to equal to 5/36. The value of $\beta$ is for two dimensional lattices only.\newline
 
 \indent This equation was used to fit the results for 50 simulations where N=100. This data is plotted in the results section in a log-log plot. From this plot, the slope of the straight line fit was extracted.
 
@@ -55,15 +55,16 @@ where $F$ is the fraction of sites in the spanning cluster, $F_0$ is the initial
 
 \subsection{Part A}
 
-\begin{figure}[!hbtc]
+\begin{figure}[!h]
 	\includegraphics[width=1\textwidth]{../output/plots_for_paper/pc_ave_vs_InverseN.pdf}
 		\caption{Critical Probability and Lattice Size Plot}
 		\label{fig:1}
 \end{figure}
 
+\clearpage
 \subsection{Part B}
 
-\begin{figure}[!hbtc]
+\begin{figure}[!h]
 	\includegraphics[width=1\textwidth]{../output/plots_for_paper/F_ave_vs_p.pdf}
 	\caption{Fraction of Sites and Probability}
 	\label{fig:2}
